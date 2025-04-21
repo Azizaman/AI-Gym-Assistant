@@ -28,7 +28,7 @@ load_dotenv()
 print("Environment variables loaded")
 
 app = Flask(__name__)
-CORS(app, resources={r"/upload": {"origins": "http://localhost:5173"}})
+CORS(app)
 
 # Initialize Firebase Admin SDK
 try:
@@ -622,7 +622,6 @@ def process_video(video_data, filename, exercise, user_id):
             frame_count += 1
         cap.release()
 
-        
         relevant_angles = []
         processed_frames = []
         
@@ -724,8 +723,6 @@ def process_video(video_data, filename, exercise, user_id):
         
         out.release()
         
-        # Rest of the function remains the same...
-        
         # Validate raw video
         if not os.path.exists(temp_raw_path) or os.path.getsize(temp_raw_path) == 0:
             raise ValueError("Raw video file is empty or missing")
@@ -816,6 +813,7 @@ def process_video(video_data, filename, exercise, user_id):
             'exercise': exercise,
             'filename': filename,
             's3_key': s3_key,
+            'video_url': video_url,  # Store signed URL in MongoDB
             'reps': reps,
             'feedback': top_feedback,
             'uploaded_at': time.time(),
@@ -897,6 +895,7 @@ def upload_file():
 def get_user_videos():
     try:
         user_id = g.user_id
+        logger.info(f"Fetching videos for user_id: {user_id}")
         limit = int(request.args.get('limit', 10))
         offset = int(request.args.get('offset', 0))
         
@@ -905,21 +904,38 @@ def get_user_videos():
             {'_id': 0}
         ).sort('uploaded_at', -1).skip(offset).limit(limit))
         
+        logger.info(f"Found {len(user_videos)} videos for user_id: {user_id}")
+        valid_videos = []
         for video in user_videos:
-            video['video_url'] = get_signed_url(video['s3_key'])
+            if 's3_key' not in video:
+                logger.warning(f"Skipping video missing s3_key: {video}")
+                continue
+            if 'video_url' not in video or not video['video_url']:
+                video['video_url'] = get_signed_url(video['s3_key'])
+                if video['video_url']:
+                    # Update MongoDB with new video_url
+                    videos_collection.update_one(
+                        {'s3_key': video['s3_key'], 'user_id': user_id},
+                        {'$set': {'video_url': video['video_url']}}
+                    )
+                    logger.info(f"Updated video {video['s3_key']} with new video_url")
+                else:
+                    logger.warning(f"Failed to generate signed URL for s3_key: {video['s3_key']}")
+                    continue  # Skip if no valid video_url
+            valid_videos.append(video)
         
         total = videos_collection.count_documents({'user_id': user_id})
         
         return jsonify({
-            'videos': user_videos,
+            'videos': valid_videos,
             'total': total,
             'limit': limit,
             'offset': offset
         }), 200
         
     except Exception as e:
-        logger.error(f"Error retrieving videos: {e}")
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error retrieving videos: {type(e).__name__}: {str(e)}")
+        return jsonify({'error': f"Server error: {str(e)}"}), 500
 
 @app.route('/video/<video_id>', methods=['GET'])
 @firebase_required
@@ -934,7 +950,21 @@ def get_video(video_id):
         if not video:
             return jsonify({'error': 'Video not found'}), 404
             
-        video['video_url'] = get_signed_url(video['s3_key'])
+        if 's3_key' not in video:
+            logger.warning(f"Video missing s3_key: {video}")
+            return jsonify({'error': 'Invalid video data'}), 400
+            
+        if 'video_url' not in video or not video['video_url']:
+            video['video_url'] = get_signed_url(video['s3_key'])
+            if video['video_url']:
+                videos_collection.update_one(
+                    {'s3_key': video['s3_key'], 'user_id': user_id},
+                    {'$set': {'video_url': video['video_url']}}
+                )
+                logger.info(f"Updated video {video['s3_key']} with new video_url")
+            else:
+                logger.warning(f"Failed to generate signed URL for s3_key: {video['s3_key']}")
+                return jsonify({'error': 'Failed to generate video URL'}), 500
         
         return jsonify(video), 200
         
