@@ -1,0 +1,9 @@
+.venv/
+firebase-admin-sdk.json
+.env
+Uploads/
+processed/
+# Video files
+*.mp4
+*.avi
+*.mov

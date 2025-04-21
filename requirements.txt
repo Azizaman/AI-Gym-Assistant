@@ -1,0 +1,51 @@
+flask==3.0.0
+flask-cors==3.0.10
+firebase-admin==6.0.0
+python-dotenv==1.0.1
+opencv-python==4.8.0.74
+numpy==1.24.3
+mediapipe==0.10.11
+pymongo==4.10.1
+boto3==1.37.28
+google-api-core==2.10.2
+grpcio==1.59.0
+grpcio-status==1.59.0
+protobuf==3.20.3
+typing-extensions==4.5.0
+
+
+
+
+
+
+
+
+
+# flask==3.0.0
+# flask-cors==3.0.10
+# firebase-admin==6.0.0
+# python-dotenv==1.0.1
+# opencv-python==4.8.0.74
+# numpy==1.24.3
+# mediapipe==0.10.11
+# pymongo==4.10.1
+# boto3==1.37.28
+# google-api-core==2.10.2
+# grpcio==1.48.2
+# grpcio-status==1.48.2
+# protobuf==3.20.3  # Upgraded to support mediapipe and tensorflow-intel
+# typing-extensions==4.5.0
+
+
+
+# Essential Libraries
+# Flask==3.0.0
+# Flask-CORS==3.0.10
+# opencv-python==4.8.0.74
+# imageio-ffmpeg==0.4.7
+# mediapipe== 0.10.11
+# numpy<2.0
+
+# # Machine Learning
+#  Libraries
+# tensorflow==2.13.0
