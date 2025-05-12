@@ -17,6 +17,10 @@ import time
 import tempfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import subprocess
+# Add to existing imports at the top of app.py
+# import google.generativeai as genai
+import google.generativeai as genai
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
@@ -32,6 +36,15 @@ CORS(app)
 
 # Initialize Firebase Admin SDK
 try:
+    # Add after existing Wasabi configuration
+# Google Gemini API configuration
+    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+    if not GOOGLE_API_KEY:
+        print("GOOGLE_API_KEY not set in environment variables")
+        raise ValueError("GOOGLE_API_KEY not set")
+    genai.configure(api_key=GOOGLE_API_KEY)
+    print("Google Gemini API configured successfully")
+
     print("Starting Firebase initialization...")
     FIREBASE_CREDENTIALS_PATH = os.getenv('FIREBASE_CREDENTIALS_PATH')
     print(f"FIREBASE_CREDENTIALS_PATH: {FIREBASE_CREDENTIALS_PATH}")
@@ -203,8 +216,8 @@ def check_squat_form(landmarks, width, height):
     hip_angle = None
     issue_detected = False
     try:
-        print(f"Analyzing squat form with {len(landmarks)} landmarks")
-        print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
+        # print(f"Analyzing squat form with {len(landmarks)} landmarks")
+        # print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
         if is_starting_position(landmarks, 'squat', width, height):
             feedback.append("Starting position detected")
             return feedback, None, None, error_points
@@ -292,8 +305,8 @@ def check_push_up_form(landmarks, width, height):
     elbow_angle = None
     issue_detected = False
     try:
-        print(f"Analyzing push-up form with {len(landmarks)} landmarks")
-        print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
+        # print(f"Analyzing push-up form with {len(landmarks)} landmarks")
+        # print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
         if is_starting_position(landmarks, 'push_up', width, height):
             feedback.append("Starting position detected")
             return feedback, None, None, error_points
@@ -345,8 +358,8 @@ def check_bicep_curl_form(landmarks, width, height):
     elbow_angle = None
     issue_detected = False
     try:
-        print(f"Analyzing bicep curl form with {len(landmarks)} landmarks")
-        print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
+        # print(f"Analyzing bicep curl form with {len(landmarks)} landmarks")
+        # print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
         if is_starting_position(landmarks, 'bicep_curl', width, height):
             feedback.append("Starting position detected")
             return feedback, None, None, error_points
@@ -394,8 +407,8 @@ def check_plank_form(landmarks, width, height):
     body_angle = None
     issue_detected = False
     try:
-        print(f"Analyzing plank form with {len(landmarks)} landmarks")
-        print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
+        # print(f"Analyzing plank form with {len(landmarks)} landmarks")
+        # print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
         if is_starting_position(landmarks, 'plank', width, height):
             feedback.append("Starting position detected")
             return feedback, None, None, error_points
@@ -436,8 +449,8 @@ def check_jumping_jack_form(landmarks, width, height):
     arm_angle = None
     issue_detected = False
     try:
-        print(f"Analyzing jumping jack form with {len(landmarks)} landmarks")
-        print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
+        # print(f"Analyzing jumping jack form with {len(landmarks)} landmarks")
+        # print(f"Key landmarks - Shoulder: ({landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y:.2f}), Hip: ({landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x:.2f}, {landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y:.2f})")
         if is_starting_position(landmarks, 'jumping_jack', width, height):
             feedback.append("Starting position detected")
             return feedback, None, None, error_points
@@ -997,10 +1010,38 @@ def process_video(video_data, filename, exercise, user_id):
                     logger.debug(f"Removed temporary file: {temp_file}")
                 except Exception as clean_error:
                     logger.error(f"Error removing temporary file {temp_file}: {clean_error}")
+    
 
-# [Rest of the code remains the same]
 
-# [Rest of the code remains the same]
+
+
+import google.generativeai as genai
+
+def query_gemini(prompt, api_key):
+    try:
+        # Configure the API
+        genai.configure(api_key=api_key)
+        
+        # Construct prompt
+        full_prompt = f"""
+        You are a fitness coach AI. Provide personalized exercise and diet suggestions based on the user's query. Keep responses concise, practical, and encouraging. Suggest specific exercises (e.g., squats, push-ups) and simple diet tips (e.g., high-protein meals). Use bullet points for clarity. Avoid using markdown formatting (e.g., no **bold** or *italics*).
+
+        User Query: {prompt}
+        """
+        
+        # Generate text with the older library format
+        response = genai.generate_text(
+            model="models/gemini-2.0-flash",
+            prompt=full_prompt,
+            temperature=0.7,
+            max_output_tokens=500
+        )
+        
+        return response.text
+    
+    except Exception as e:
+        print(f"Error querying Gemini API: {e}")
+        raise ValueError(f"Failed to generate response: {e}")
 
 @app.route('/upload', methods=['POST'])
 @firebase_required
@@ -1135,6 +1176,31 @@ def get_video(video_id):
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'ok', 'timestamp': time.time()}), 200
+
+@app.route('/chat', methods=['POST'])
+@firebase_required
+def chat():
+    try:
+        user_id = g.user_id
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({'error': 'No message provided'}), 400
+        
+        user_message = data['message']
+        if not user_message.strip():
+            return jsonify({'error': 'Empty message provided'}), 400
+        
+        # Query Gemini API with user message and context
+        response_text = query_gemini(user_message, user_id)
+        
+        return jsonify({
+            'response': response_text,
+            'timestamp': time.time()
+        }), 200
+    
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
