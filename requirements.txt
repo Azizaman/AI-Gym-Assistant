@@ -6,6 +6,7 @@ numpy
 mediapipe 
 werkzeug
 flask-cors
-pymongo firebase-admin
+pymongo
+firebase-admin
 requests
 google-generativeai
