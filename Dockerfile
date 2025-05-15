@@ -1,20 +1,44 @@
-FROM jrottenberg/ffmpeg:5.1-ubuntu2204 as ffmpeg
+# Use Ubuntu as base image for better ffmpeg support
+FROM ubuntu:22.04
 
-FROM python:3.11-slim
+# Set non-interactive mode for apt
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Copy ffmpeg binaries from full image
-COPY --from=ffmpeg /usr/bin/ffmpeg /usr/bin/ffmpeg
-COPY --from=ffmpeg /usr/bin/ffprobe /usr/bin/ffprobe
+# Install Python and required system dependencies including ffmpeg
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-dev \
+    ffmpeg \
+    libavcodec-extra \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
+# Verify ffmpeg is installed correctly
+RUN ffmpeg -version && \
+    ffmpeg -codecs
+
+# Create app directory
 WORKDIR /app
 
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir -r requirements.txt
+
+# Copy application code
 COPY . .
 
-RUN apt-get update && apt-get install -y libglib2.0-0 libsm6 libxext6 libxrender-dev \
-    && pip install --upgrade pip \
-    && pip install -r requirements.txt
-
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
+
+# Expose the port your app runs on
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+# Run the application
+CMD ["python3", "app.py"]
